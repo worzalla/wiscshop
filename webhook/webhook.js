@@ -90,13 +90,15 @@ app.post('/', express.json(), (req, res) => {
   }
   async function queryTags() {
     let route = ""
-
-    if(pageIndicator() == 1) {
+    let indicator = await pageIndicator()
+    let app = await getInfo('/application')
+    let page = app.page
+    if(indicator == 1) {
       route = "/tags"
     }
     else if (indicator == 2) {
       let usrPart = "/" + username;
-      route = page.toString().replace(usrPart, '') + "/tags";
+      route = "categories/" + page.toString().replace(usrPart + "/", '') + "/tags";
     }
     else if (indicator == 4) {
       let productID = page.match(/(\d+)/)[0];
@@ -114,6 +116,11 @@ app.post('/', express.json(), (req, res) => {
   async function queryCart() {
     let info = await getInfo('/application/products');
     let cart = info.products
+
+    if (cart.length === 0 ){
+      await updateMessages("Your cart is empty!");
+      return;
+    }
 
     let totalItems = 0
     let price = 0
@@ -146,7 +153,7 @@ app.post('/', express.json(), (req, res) => {
     message = message.concat("It is categorized in " + info.category + ". ")
     // Tags
     if (tags.tags){
-      message = message.concat("It has the qualities " + tags.join(",") +". ")
+      message = message.concat("It has the qualities " + tags.tags.join(",") +". ")
     } else {
       message = message.concat("This item doesn't have any tags associated with it. ")
     }
@@ -211,7 +218,6 @@ app.post('/', express.json(), (req, res) => {
     let uri = ""
     let pID = -1
     let indicator = await pageIndicator()
-    console.log(indicator)
     if (indicator == 4){
       let page = await getInfo('/application')
       pID = page.page.match(/(\d+)/)[0];
@@ -220,15 +226,14 @@ app.post('/', express.json(), (req, res) => {
       let tagPart = ""
       // Are tags active
       let tags = await getInfo('/application/tags')
-      if (tags.tags) {
+      if (tags.tags.length !== 0) {
         tagPart = "tags=" + tags.tags.toString()+ "&"
       }
       // What category
       let page = await getInfo('application')
-      let categoryPart = "category="+page.page.replace("/"+username+"/", "");
+      let categoryPart = "category="+page.page.replace("/"+username+"/", "").toLowerCase();
       
       uri = "/products/?" + tagPart+categoryPart
-
       let items = await getInfo(uri)
       // What position
       let ordinal = agent.parameters.ordinal
@@ -237,9 +242,10 @@ app.post('/', express.json(), (req, res) => {
     agent.add("Getting the product")
     return pID
   }
+
+  // You can't add an item to the cart if you're on its page, i guess
   async function addItemToCart() {
-    let pID = await getProductId(); 
-    console.log(pID)
+    let pID = await getProductId();
     // How many
     let number = agent.parameters.number || 1;
     let route = 'https://mysqlcs639.cs.wisc.edu/application/products/' + pID
@@ -251,7 +257,6 @@ app.post('/', express.json(), (req, res) => {
     }
 
     for (let i = 0; i < number; i++) {
-      console.log("add")
       await fetch(route, request)
     }
 
@@ -263,8 +268,7 @@ app.post('/', express.json(), (req, res) => {
 
     let cart = await getInfo('/application/products')
     let pID = cart.products[agent.parameters.ordinal - 1].id
-    let number = agent.parameters.number || count
-
+    let number = agent.parameters.number || cart.products.length
     let route = 'https://mysqlcs639.cs.wisc.edu/application/products/' + pID
     let request = {
       method: 'DELETE',
@@ -274,7 +278,6 @@ app.post('/', express.json(), (req, res) => {
     }
 
     for (let i = 0; i < number; i++) {
-      console.log("delete")
       await fetch(route, request)
     }
 
@@ -358,7 +361,7 @@ app.post('/', express.json(), (req, res) => {
   }
   async function chooseCategory(){   
     let userPart = "/" + username;
-    let categoryPart = "/" + agent.parameters.Categories;
+    let categoryPart = "/" + agent.parameters.Categories.toLowerCase();
 
     setPage(userPart + categoryPart)
 
@@ -437,7 +440,6 @@ app.post('/', express.json(), (req, res) => {
   intentMap.set('Choose Category', chooseCategory)
   intentMap.set('Clear Cart', clearCart)
   intentMap.set('Default Welcome Intent', welcome)
-  intentMap.set('Delete Messages', clearMessages)
   intentMap.set('Filter', filter)
   intentMap.set('Filter - cancel', stopFilter)
   intentMap.set('Go Back', goBack)
