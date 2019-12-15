@@ -83,6 +83,10 @@ class Cart extends React.Component {
     }
   }
 
+  fetchProducts(){
+    return this.state.products
+  }
+
   getProducts() {
     let products = [];
 

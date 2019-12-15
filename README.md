@@ -186,3 +186,36 @@ Suppose you want to change the page of the application. You can do so by updatin
 - `/<username>/cart` // Cart
 - `/<username>/cart-review` // Cart Review
 - `/<username>/cart-confirmed` // Purchase Confirmed Page
+
+
+# Rubric
+## Login (0.5 pts)
+User is able to login with the voice assistant.
+
+## Queries 
+### Categories (0.5 pts)
+User is able to request information about categories.
+### Tags (0.5 pts)
+User is able to request information about tags for a specific category.
+### Cart (1 pt)
+User is able to request information about their cart (e.g. total number/type of items, total, etc).
+### Product Info (1 pt)
+User is able to request information about a product. If the product has reviews, they should be able to inquire about reviews and average ratings.
+
+## Actions
+### Tags (1 pt)
+User should be able to narrow down the number of items shown based on tags.
+### Cart (1 pt)
+User should be able add/remove items (or multiple of an item) to/from their cart.
+### Cart Confirm (1 pt)
+Users should be able to review, then confirm their car
+
+## Navigation
+### Pages (1pt)
+Users are able to navigate throughout the application with the voice assistant using natural language, e.g. "Take me to the home page" or "Show me the hats".
+
+## Messages (0.5 pts)
+Messages should be updated when the user or agent says something. Upon starting a new session, the messages should be cleared.
+
+## Design and Personality (2 pts)
+Users should be able to converse with the agent in natural language to perform tasks. In other words, you shouldn't have to specify product id's.
